@@ -1,0 +1,12 @@
+cd /etc/apt/sources.list.d/
+sudo wget "http://archive.cloudera.com/director/ubuntu/trusty/amd64/director/cloudera-director.list"
+
+curl -s "http://archive.cloudera.com/director/ubuntu/trusty/amd64/director/archive.key" | sudo apt-key add -
+
+apt-get update
+apt-get install cloudera-director-server
+apt-get install oracle-j2sdk1.7
+sudo service cloudera-director-server start
+
+iptables-save > ~/firewall.rules
+sudo service ufw stop

@@ -1,0 +1,213 @@
+Create Database Statement
+Create Database is a statement used to create a database in Hive. A database in Hive is a namespace or a collection of tables. The syntax for this statement is as follows:
+
+CREATE DATABASE|SCHEMA [IF NOT EXISTS] <database name>
+Here, IF NOT EXISTS is an optional clause, which notifies the user that a database with the same name already exists. We can use SCHEMA in place of DATABASE in this command. The following query is executed to create a database named userdb:
+
+hive> CREATE DATABASE [IF NOT EXISTS] userdb;
+or
+
+hive> CREATE SCHEMA userdb;
+The following query is used to verify a databases list:
+
+hive> SHOW DATABASES;
+default
+userdb
+
+Drop Database Statement
+Drop Database is a statement that drops all the tables and deletes the database. Its syntax is as follows:
+
+DROP DATABASE StatementDROP (DATABASE|SCHEMA) [IF EXISTS] database_name 
+[RESTRICT|CASCADE];
+The following queries are used to drop a database. Let us assume that the database name is userdb.
+
+hive> DROP DATABASE IF EXISTS userdb;
+The following query drops the database using CASCADE. It means dropping respective tables before dropping the database.
+
+hive> DROP DATABASE IF EXISTS userdb CASCADE;
+The following query drops the database using SCHEMA.
+
+hive> DROP SCHEMA userdb;
+
+Create Table Statement
+Create Table is a statement used to create a table in Hive. The syntax and example are as follows:
+
+Syntax
+CREATE [TEMPORARY] [EXTERNAL] TABLE [IF NOT EXISTS] [db_name.] table_name
+
+[(col_name data_type [COMMENT col_comment], ...)]
+[COMMENT table_comment]
+[ROW FORMAT row_format]
+[STORED AS file_format]
+
+The following data is a Comment, Row formatted fields such as Field terminator, Lines terminator, and Stored File type.
+
+COMMENT ‘Employee details’
+FIELDS TERMINATED BY ‘\t’
+LINES TERMINATED BY ‘\n’
+STORED IN TEXT FILE
+The following query creates a table named employee using the above data.
+
+hive> CREATE TABLE IF NOT EXISTS employee ( eid int, name String,
+salary String, destination String)
+COMMENT ‘Employee details’
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ‘\t’
+LINES TERMINATED BY ‘\n’
+STORED AS TEXTFILE;
+
+Load Data Statement
+Generally, after creating a table in SQL, we can insert data using the Insert statement. But in Hive, we can insert data using the LOAD DATA statement.
+
+While inserting data into Hive, it is better to use LOAD DATA to store bulk records. There are two ways to load data: one is from local file system and second is from Hadoop file system.
+
+Syntax
+The syntax for load data is as follows:
+
+LOAD DATA [LOCAL] INPATH 'filepath' [OVERWRITE] INTO TABLE tablename 
+[PARTITION (partcol1=val1, partcol2=val2 ...)]
+LOCAL is identifier to specify the local path. It is optional.
+OVERWRITE is optional to overwrite the data in the table.
+PARTITION is optional.
+
+
+Example
+We will insert the following data into the table. It is a text file named sample.txt in /home/user directory.
+
+1201  Gopal       45000    Technical manager
+1202  Manisha     45000    Proof reader
+1203  Masthanvali 40000    Technical writer
+1204  Kiran       40000    Hr Admin
+1205  Kranthi     30000    Op Admin
+The following query loads the given text into the table.
+
+hive> LOAD DATA LOCAL INPATH '/home/user/sample.txt'
+OVERWRITE INTO TABLE employee;
+On successful download, you get to see the following response:
+
+OK
+Time taken: 15.905 seconds
+hive>
+
+Alter Table Statement
+It is used to alter a table in Hive.
+
+Syntax
+The statement takes any of the following syntaxes based on what attributes we wish to modify in a table.
+
+ALTER TABLE name RENAME TO new_name
+ALTER TABLE name ADD COLUMNS (col_spec[, col_spec ...])
+ALTER TABLE name DROP [COLUMN] column_name
+ALTER TABLE name CHANGE column_name new_name new_type
+ALTER TABLE name REPLACE COLUMNS (col_spec[, col_spec ...])
+Rename To… Statement
+The following query renames the table from employee to emp.
+
+hive> ALTER TABLE employee RENAME TO emp;
+Add Columns Statement
+The following query adds a column named dept to the employee table.
+
+hive> ALTER TABLE employee ADD COLUMNS ( 
+dept STRING COMMENT 'Department name');
+Replace Statement
+The following query deletes all the columns from the employee table and replaces it with emp and name columns:
+
+hive> ALTER TABLE employee REPLACE COLUMNS ( 
+eid INT empid Int, 
+ename STRING name String);
+
+Drop Table Statement
+The syntax is as follows:
+
+DROP TABLE [IF EXISTS] table_name;
+The following query drops a table named employee:
+
+hive> DROP TABLE IF EXISTS employee;
+
+Adding a Partition
+We can add partitions to a table by altering the table. Let us assume we have a table called employee with fields such as Id, Name, Salary, Designation, Dept, and yoj.
+
+Syntax:
+ALTER TABLE table_name ADD [IF NOT EXISTS] PARTITION partition_spec
+[LOCATION 'location1'] partition_spec [LOCATION 'location2'] ...;
+
+partition_spec:
+: (p_column = p_col_value, p_column = p_col_value, ...)
+The following query is used to add a partition to the employee table.
+
+hive> ALTER TABLE employee
+> ADD PARTITION (year=’2013’)
+> location '/2012/part2012';
+Renaming a Partition
+The syntax of this command is as follows.
+
+ALTER TABLE table_name PARTITION partition_spec RENAME TO PARTITION partition_spec;
+The following query is used to rename a partition:
+
+hive> ALTER TABLE employee PARTITION (year=’1203’)
+   > RENAME TO PARTITION (Yoj=’1203’);
+Dropping a Partition
+The following syntax is used to drop a partition:
+
+ALTER TABLE table_name DROP [IF EXISTS] PARTITION partition_spec, PARTITION partition_spec,...;
+The following query is used to drop a partition:
+
+
+
+hive> ALTER TABLE employee DROP [IF EXISTS]
+   > PARTITION (year=’1203’);
+   
+   Example
+Let us assume the employee table is composed of fields named Id, Name, Salary, Designation, and Dept as shown below. Generate a query to retrieve the employee details whose Id is 1205.
+
++-----+--------------+--------+---------------------------+------+
+| Id  | Name         | Salary | Designation               | Dept |
++-----+--------------+------------------------------------+------+
+|1201 | Gopal        | 45000  | Technical manager         | TP   |
+|1202 | Manisha      | 45000  | Proofreader               | PR   |
+|1203 | Masthanvali  | 40000  | Technical writer          | TP   |
+|1204 | Krian        | 40000  | Hr Admin                  | HR   |
+|1205 | Kranthi      | 30000  | Op Admin                  | Admin|
++-----+--------------+--------+---------------------------+------+
+The following query is executed to retrieve the employee details using the above table:
+
+hive> SELECT * FROM employee WHERE Id=1205;
+On successful execution of query, you get to see the following response:
+
++-----+-----------+-----------+----------------------------------+
+| ID  | Name      | Salary    | Designation              | Dept  |
++-----+---------------+-------+----------------------------------+
+|1205 | Kranthi   | 30000     | Op Admin                 | Admin |
++-----+-----------+-----------+----------------------------------+
+The following query is executed to retrieve the employee details whose salary is more than or equal to Rs 40000.
+
+hive> SELECT * FROM employee WHERE Salary>=40000;
+On successful execution of query, you get to see the following response:
+
++-----+------------+--------+----------------------------+------+
+| ID  | Name       | Salary | Designation                | Dept |
++-----+------------+--------+----------------------------+------+
+|1201 | Gopal      | 45000  | Technical manager          | TP   |
+|1202 | Manisha    | 45000  | Proofreader                | PR   |
+|1203 | Masthanvali| 40000  | Technical writer           | TP   |
+|1204 | Krian      | 40000  | Hr Admin                   | HR   |
++-----+------------+--------+----------------------------+------+
+
+
+Example
+The following queries demonstrate some built-in functions:
+
+round() function
+hive> SELECT round(2.6) from temp;
+On successful execution of query, you get to see the following response:
+
+3.0
+floor() function
+hive> SELECT floor(2.6) from temp;
+On successful execution of the query, you get to see the following response:
+
+2.0
+ceil() function
+hive> SELECT ceil(2.6) from temp;
+On successful execution of the query, you get to see the following response:
+   

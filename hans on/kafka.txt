@@ -1,0 +1,546 @@
+https://www.tutorialspoint.com/apache_kafka/
+
+Apache Kafka was originated at LinkedIn and later became an open sourced Apache project in 2011, then First-class Apache project in 2012. Kafka is written in Scala and Java. Apache Kafka is publish-subscribe based fault tolerant messaging system. It is fast, scalable and distributed by design.
+
+This tutorial will explore the principles of Kafka, installation, operations and then it will walk you through with the deployment of Kafka cluster. Finally, we will conclude with real-time applica-tions and integration with Big Data Technologies.
+
+Audience
+This tutorial has been prepared for professionals aspiring to make a career in Big Data Analytics using Apache Kafka messaging system. It will give you enough understanding on how to use Kafka clusters.
+
+Prerequisites
+Before proceeding with this tutorial, you must have a good understanding of Java, Scala, Dis-tributed messaging system, and Linux environment.
+
+Use Cases
+Kafka can be used in many Use Cases. Some of them are listed below -
+
+Metrics - Kafka is often used for operational monitoring data. This involves aggregating statistics from distributed applications to produce centralized feeds of operational data.
+
+Log Aggregation Solution - Kafka can be used across an organization to collect logs from multiple services and make them available in a standard format to multiple con-sumers.
+
+Stream Processing - Popular frameworks such as Storm and Spark Streaming read data from a topic, processes it, and write processed data to a new topic where it becomes available for users and applications. Kafka’s strong durability is also very useful in the context of stream processing.
+
+S.No	Components and Description
+1	
+Topics
+
+A stream of messages belonging to a particular category is called a topic. Data is stored in topics.
+
+Topics are split into partitions. For each topic, Kafka keeps a mini-mum of one partition. Each such partition contains messages in an immutable ordered sequence. A partition is implemented as a set of segment files of equal sizes.
+
+2	
+Partition
+
+Topics may have many partitions, so it can handle an arbitrary amount of data.
+
+3	
+Partition offset
+
+Each partitioned message has a unique sequence id called as offset.
+
+4	
+Replicas of partition
+
+Replicas are nothing but backups of a partition. Replicas are never read or write data. They are used to prevent data loss.
+
+5	
+Brokers
+
+Brokers are simple system responsible for maintaining the pub-lished data. Each broker may have zero or more partitions per topic. Assume, if there are N partitions in a topic and N number of brokers, each broker will have one partition.
+
+Assume if there are N partitions in a topic and more than N brokers (n + m), the first N broker will have one partition and the next M broker will not have any partition for that particular topic.
+
+Assume if there are N partitions in a topic and less than N brokers (n-m), each broker will have one or more partition sharing among them. This scenario is not recommended due to unequal load distri-bution among the broker.
+
+6	
+Kafka Cluster
+
+Kafka’s having more than one broker are called as Kafka cluster. A Kafka cluster can be expanded without downtime. These clusters are used to manage the persistence and replication of message data.
+
+7	
+Producers
+
+Producers are the publisher of messages to one or more Kafka topics. Producers send data to Kafka brokers. Every time a producer pub-lishes a message to a broker, the broker simply appends the message to the last segment file. Actually, the message will be appended to a partition. Producer can also send messages to a partition of their choice.
+
+8	
+Consumers
+
+Consumers read data from brokers. Consumers subscribes to one or more topics and consume published messages by pulling data from the brokers.
+
+9	
+Leader
+
+Leader is the node responsible for all reads and writes for the given partition. Every partition has one server acting as a leader.
+
+10	
+Follower
+
+Node which follows leader instructions are called as follower. If the leader fails, one of the follower will automatically become the new leader. A follower acts as normal consumer, pulls messages and up-dates its own data store.
+
+S.No	Components and Description
+1	
+Topics
+
+A stream of messages belonging to a particular category is called a topic. Data is stored in topics.
+
+Topics are split into partitions. For each topic, Kafka keeps a mini-mum of one partition. Each such partition contains messages in an immutable ordered sequence. A partition is implemented as a set of segment files of equal sizes.
+
+2	
+Partition
+
+Topics may have many partitions, so it can handle an arbitrary amount of data.
+
+3	
+Partition offset
+
+Each partitioned message has a unique sequence id called as offset.
+
+4	
+Replicas of partition
+
+Replicas are nothing but backups of a partition. Replicas are never read or write data. They are used to prevent data loss.
+
+5	
+Brokers
+
+Brokers are simple system responsible for maintaining the pub-lished data. Each broker may have zero or more partitions per topic. Assume, if there are N partitions in a topic and N number of brokers, each broker will have one partition.
+
+Assume if there are N partitions in a topic and more than N brokers (n + m), the first N broker will have one partition and the next M broker will not have any partition for that particular topic.
+
+Assume if there are N partitions in a topic and less than N brokers (n-m), each broker will have one or more partition sharing among them. This scenario is not recommended due to unequal load distri-bution among the broker.
+
+6	
+Kafka Cluster
+
+Kafka’s having more than one broker are called as Kafka cluster. A Kafka cluster can be expanded without downtime. These clusters are used to manage the persistence and replication of message data.
+
+7	
+Producers
+
+Producers are the publisher of messages to one or more Kafka topics. Producers send data to Kafka brokers. Every time a producer pub-lishes a message to a broker, the broker simply appends the message to the last segment file. Actually, the message will be appended to a partition. Producer can also send messages to a partition of their choice.
+
+8	
+Consumers
+
+Consumers read data from brokers. Consumers subscribes to one or more topics and consume published messages by pulling data from the brokers.
+
+9	
+Leader
+
+Leader is the node responsible for all reads and writes for the given partition. Every partition has one server acting as a leader.
+
+10	
+Follower
+
+Node which follows leader instructions are called as follower. If the leader fails, one of the follower will automatically become the new leader. A follower acts as normal consumer, pulls messages and up-dates its own data store.
+
+Single Node-Multiple Brokers Configuration
+Before moving on to the multiple brokers cluster setup, first start your ZooKeeper server.
+
+Create Multiple Kafka Brokers - We have one Kafka broker instance already in con-fig/server.properties. Now we need multiple broker instances, so copy the existing server.prop-erties file into two new config files and rename it as server-one.properties and server-two.prop-erties. Then edit both new files and assign the following changes -
+
+config/server-one.properties
+# The id of the broker. This must be set to a unique integer for each broker.
+broker.id=1
+# The port the socket server listens on
+port=9093
+# A comma seperated list of directories under which to store log files
+log.dirs=/tmp/kafka-logs-1
+config/server-two.properties
+# The id of the broker. This must be set to a unique integer for each broker.
+broker.id=2
+# The port the socket server listens on
+port=9094
+# A comma seperated list of directories under which to store log files
+log.dirs=/tmp/kafka-logs-2
+Start Multiple Brokers- After all the changes have been made on three servers then open three new terminals to start each broker one by one.
+
+Broker1
+bin/kafka-server-start.sh config/server.properties
+Broker2
+bin/kafka-server-start.sh config/server-one.properties
+Broker3
+bin/kafka-server-start.sh config/server-two.properties
+Now we have three different brokers running on the machine. Try it by yourself to check all the daemons by typing jps on the ZooKeeper terminal, then you would see the response.
+
+Creating a Topic
+Let us assign the replication factor value as three for this topic because we have three different brokers running. If you have two brokers, then the assigned replica value will be two.
+
+Syntax
+
+bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 3 
+-partitions 1 --topic topic-name
+Example
+
+bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 3 
+-partitions 1 --topic Multibrokerapplication
+Output
+
+created topic “Multibrokerapplication”
+The Describe command is used to check which broker is listening on the current created topic as shown below -
+
+bin/kafka-topics.sh --describe --zookeeper localhost:2181 
+--topic Multibrokerappli-cation
+Output
+
+bin/kafka-topics.sh --describe --zookeeper localhost:2181 
+--topic Multibrokerappli-cation
+
+Topic:Multibrokerapplication    PartitionCount:1 
+ReplicationFactor:3 Configs:
+   
+Topic:Multibrokerapplication Partition:0 Leader:0 
+Replicas:0,2,1 Isr:0,2,1
+From the above output, we can conclude that first line gives a summary of all the partitions, showing topic name, partition count and the replication factor that we have chosen already. In the second line, each node will be the leader for a randomly selected portion of the partitions.
+
+In our case, we see that our first broker (with broker.id 0) is the leader. Then Replicas:0,2,1 means that all the brokers replicate the topic finally Isr is the set of in-sync replicas. Well, this is the subset of replicas that are currently alive and caught up by the leader.
+
+Start Producer to Send Messages
+This procedure remains the same as in the single broker setup.
+
+Example
+
+bin/kafka-console-producer.sh --broker-list localhost:9092 
+--topic Multibrokerapplication
+Output
+
+bin/kafka-console-producer.sh --broker-list localhost:9092 --topic Multibrokerapplication
+[2016-01-20 19:27:21,045] WARN Property topic is not valid (kafka.utils.Verifia-bleProperties)
+This is single node-multi broker demo
+This is the second message
+Start Consumer to Receive Messages
+This procedure remains the same as shown in the single broker setup.
+
+Example
+
+bin/kafka-console-consumer.sh --zookeeper localhost:2181 
+—topic Multibrokerapplica-tion --from-beginning
+Output
+
+bin/kafka-console-consumer.sh --zookeeper localhost:2181 
+—topic Multibrokerapplica-tion —from-beginning
+This is single node-multi broker demo
+This is the second message
+Basic Topic Operations
+In this chapter we will discuss the various basic topic operations.
+
+Modifying a Topic
+As you have already understood how to create a topic in Kafka Cluster. Now let us modify a created topic using the following command
+
+Syntax
+
+bin/kafka-topics.sh —zookeeper localhost:2181 --alter --topic topic_name 
+--parti-tions count
+Example
+
+We have already created a topic “Hello-Kafka” with single partition count and one replica factor. 
+Now using “alter” command we have changed the partition count.
+bin/kafka-topics.sh --zookeeper localhost:2181 
+--alter --topic Hello-kafka --parti-tions 2
+Output
+
+WARNING: If partitions are increased for a topic that has a key, 
+the partition logic or ordering of the messages will be affected
+Adding partitions succeeded!
+Deleting a Topic
+To delete a topic, you can use the following syntax.
+
+Syntax
+
+bin/kafka-topics.sh --zookeeper localhost:2181 --delete --topic topic_name
+Example
+
+bin/kafka-topics.sh --zookeeper localhost:2181 --delete --topic Hello-kafka
+Output
+
+> Topic Hello-kafka marked for deletion
+
+SimpleProducer application
+Before creating the application, first start ZooKeeper and Kafka broker then create your own topic in Kafka broker using create topic command. After that create a java class named Sim-pleProducer.java and type in the following coding.
+
+//import util.properties packages
+import java.util.Properties;
+
+//import simple producer packages
+import org.apache.kafka.clients.producer.Producer;
+
+//import KafkaProducer packages
+import org.apache.kafka.clients.producer.KafkaProducer;
+
+//import ProducerRecord packages
+import org.apache.kafka.clients.producer.ProducerRecord;
+
+//Create java class named “SimpleProducer”
+public class SimpleProducer {
+   
+   public static void main(String[] args) throws Exception{
+      
+      // Check arguments length value
+      if(args.length == 0){
+         System.out.println("Enter topic name”);
+         return;
+      }
+      
+      //Assign topicName to string variable
+      String topicName = args[0].toString();
+      
+      // create instance for properties to access producer configs   
+      Properties props = new Properties();
+      
+      //Assign localhost id
+      props.put("bootstrap.servers", “localhost:9092");
+      
+      //Set acknowledgements for producer requests.      
+      props.put("acks", “all");
+      
+      //If the request fails, the producer can automatically retry,
+      props.put("retries", 0);
+      
+      //Specify buffer size in config
+      props.put("batch.size", 16384);
+      
+      //Reduce the no of requests less than 0   
+      props.put("linger.ms", 1);
+      
+      //The buffer.memory controls the total amount of memory available to the producer for buffering.   
+      props.put("buffer.memory", 33554432);
+      
+      props.put("key.serializer", 
+         "org.apache.kafka.common.serializa-tion.StringSerializer");
+         
+      props.put("value.serializer", 
+         "org.apache.kafka.common.serializa-tion.StringSerializer");
+      
+      Producer<String, String> producer = new KafkaProducer
+         <String, String>(props);
+            
+      for(int i = 0; i < 10; i++)
+         producer.send(new ProducerRecord<String, String>(topicName, 
+            Integer.toString(i), Integer.toString(i)));
+               System.out.println(“Message sent successfully”);
+               producer.close();
+   }
+}
+Compilation - The application can be compiled using the following command.
+
+javac -cp “/path/to/kafka/kafka_2.11-0.9.0.0/lib/*” *.java
+Execution - The application can be executed using the following command.
+
+java -cp “/path/to/kafka/kafka_2.11-0.9.0.0/lib/*”:. SimpleProducer <topic-name>
+Output
+
+Message sent successfully
+To check the above output open new terminal and type Consumer CLI command to receive messages.
+>> bin/kafka-console-consumer.sh --zookeeper localhost:2181 —topic <topic-name> —from-beginning
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+Simple Consumer Example
+As of now we have created a producer to send messages to Kafka cluster. Now let us create a consumer to consume messages form the Kafka cluster. KafkaConsumer API is used to consume messages from the Kafka cluster. KafkaConsumer class constructor is defined below.
+
+public KafkaConsumer(java.util.Map<java.lang.String,java.lang.Object> configs)
+configs - Return a map of consumer configs.
+
+KafkaConsumer class has the following significant methods that are listed in the table below.
+
+S.No	Method and Description
+1	
+public java.util.Set<TopicPar-tition> assignment()
+
+Get the set of partitions currently assigned by the con-sumer.
+
+2	
+public string subscription()
+
+Subscribe to the given list of topics to get dynamically as-signed partitions.
+
+3	
+public void sub-scribe(java.util.List<java.lang.String> topics, ConsumerRe-balanceListener listener)
+
+Subscribe to the given list of topics to get dynamically as-signed partitions.
+
+4	
+public void unsubscribe()
+
+Unsubscribe the topics from the given list of partitions.
+
+5	
+public void sub-scribe(java.util.List<java.lang.String> topics)
+
+Subscribe to the given list of topics to get dynamically as-signed partitions. If the given list of topics is empty, it is treated the same as unsubscribe().
+
+6	
+public void sub-scribe(java.util.regex.Pattern pattern, ConsumerRebalanceLis-tener listener)
+
+The argument pattern refers to the subscribing pattern in the format of regular expression and the listener argument gets notifications from the subscribing pattern.
+
+7	
+public void as-sign(java.util.List<TopicParti-tion> partitions)
+
+Manually assign a list of partitions to the customer.
+
+8	
+poll()
+
+Fetch data for the topics or partitions specified using one of the subscribe/assign APIs. This will return error, if the topics are not subscribed before the polling for data.
+
+9	
+public void commitSync()
+
+Commit offsets returned on the last poll() for all the sub-scribed list of topics and partitions. The same operation is applied to commitAsyn().
+
+10	
+public void seek(TopicPartition partition, long offset)
+
+Fetch the current offset value that consumer will use on the next poll() method.
+
+11	
+public void resume()
+
+Resume the paused partitions.
+
+12	
+public void wakeup()
+
+Wakeup the consumer.
+
+ConsumerRecord API
+The ConsumerRecord API is used to receive records from the Kafka cluster. This API consists of a topic name, partition number, from which the record is being received and an offset that points to the record in a Kafka partition. ConsumerRecord class is used to create a consumer record with specific topic name, partition count and <key, value> pairs. It has the following signature.
+
+public ConsumerRecord(string topic,int partition, long offset,K key, V value)
+Topic - The topic name for consumer record received from the Kafka cluster.
+
+Partition - Partition for the topic.
+
+Key - The key of the record, if no key exists null will be returned.
+
+Value - Record contents.
+
+ConsumerRecords API
+ConsumerRecords API acts as a container for ConsumerRecord. This API is used to keep the list of ConsumerRecord per partition for a particular topic. Its Constructor is defined below.
+
+public ConsumerRecords(java.util.Map<TopicPartition,java.util.List
+<Consumer-Record>K,V>>> records)
+TopicPartition - Return a map of partition for a particular topic.
+
+Records - Return list of ConsumerRecord.
+
+ConsumerRecords class has the following methods defined.
+
+S.No	Methods and Description
+1	
+public int count()
+
+The number of records for all the topics.
+
+2	
+public Set partitions()
+
+The set of partitions with data in this record set (if no data was returned then the set is empty).
+
+3	
+public Iterator iterator()
+
+Iterator enables you to cycle through a collection, obtaining or re-moving elements.
+
+4	
+public List records()
+
+Get list of records for the given partition.
+
+Configuration Settings
+The configuration settings for the Consumer client API main configuration settings are listed below -
+
+S.No	Settings and Description
+1	
+bootstrap.servers
+
+Bootstrapping list of brokers.
+
+2	
+group.id
+
+Assigns an individual consumer to a group.
+
+3	
+enable.auto.commit
+
+Enable auto commit for offsets if the value is true, otherwise not committed.
+
+4	
+auto.commit.interval.ms
+
+Return how often updated consumed offsets are written to ZooKeeper.
+
+5	
+session.timeout.ms
+
+Indicates how many milliseconds Kafka will wait for the ZooKeeper to respond to a request (read or write) before giving up and continuing to consume messages.
+
+SimpleConsumer Application
+The producer application steps remain the same here. First, start your ZooKeeper and Kafka broker. Then create a SimpleConsumer application with the java class named SimpleCon-sumer.java and type the following code.
+
+import java.util.Properties;
+import java.util.Arrays;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+
+public class SimpleConsumer {
+   public static void main(String[] args) throws Exception {
+      if(args.length == 0){
+         System.out.println("Enter topic name");
+         return;
+      }
+      //Kafka consumer configuration settings
+      String topicName = args[0].toString();
+      Properties props = new Properties();
+      
+      props.put("bootstrap.servers", "localhost:9092");
+      props.put("group.id", "test");
+      props.put("enable.auto.commit", "true");
+      props.put("auto.commit.interval.ms", "1000");
+      props.put("session.timeout.ms", "30000");
+      props.put("key.deserializer", 
+         "org.apache.kafka.common.serializa-tion.StringDeserializer");
+      props.put("value.deserializer", 
+         "org.apache.kafka.common.serializa-tion.StringDeserializer");
+      KafkaConsumer<String, String> consumer = new KafkaConsumer
+         <String, String>(props);
+      
+      //Kafka Consumer subscribes list of topics here.
+      consumer.subscribe(Arrays.asList(topicName))
+      
+      //print the topic name
+      System.out.println("Subscribed to topic " + topicName);
+      int i = 0;
+      
+      while (true) {
+         ConsumerRecords<String, String> records = con-sumer.poll(100);
+         for (ConsumerRecord<String, String> record : records)
+         
+         // print the offset,key and value for the consumer records.
+         System.out.printf("offset = %d, key = %s, value = %s\n", 
+            record.offset(), record.key(), record.value());
+      }
+   }
+}
+Compilation - The application can be compiled using the following command.
+
+javac -cp “/path/to/kafka/kafka_2.11-0.9.0.0/lib/*” *.java
+Execution - The application can be executed using the following command
+
+java -cp “/path/to/kafka/kafka_2.11-0.9.0.0/lib/*”:. SimpleConsumer <topic-name>
+Input - Open the producer CLI and send some messages to the topic. You can put the smple input as ‘Hello Consumer’.
+
+Output - Following will be the output.
+
+Subscribed to topic Hello-Kafka
+offset = 3, key = null, value = Hello Consumer
+

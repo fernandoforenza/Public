@@ -1,0 +1,173 @@
+https://www.tutorialspoint.com/apache_flume/apache_flume_architecture.htm
+
+Source
+A source is the component of an Agent which receives data from the data generators and transfers it to one or more channels in the form of Flume events.
+
+Apache Flume supports several types of sources and each source receives events from a specified data generator.
+
+Example - Avro source, Thrift source, twitter 1% source etc.
+
+Channel
+A channel is a transient store which receives the events from the source and buffers them till they are consumed by sinks. It acts as a bridge between the sources and the sinks.
+
+These channels are fully transactional and they can work with any number of sources and sinks.
+
+Example - JDBC channel, File system channel, Memory channel, etc.
+
+Sink
+A sink stores the data into centralized stores like HBase and HDFS. It consumes the data (events) from the channels and delivers it to the destination. The destination of the sink might be another agent or the central stores.
+
+Example - HDFS sink
+
+Flume supports various sources, sinks, and channels. They are listed in the table given below.
+
+Sources		
+Avro Source
+Thrift Source
+Exec Source
+JMS Source
+Spooling Directory Source
+Twitter 1% firehose Source
+Kafka Source
+NetCat Source
+Sequence Generator Source
+Syslog Sources
+Syslog TCP Source
+Multiport Syslog TCP Source
+Syslog UDP Source
+HTTP Source
+Stress Source
+Legacy Sources
+Thrift Legacy Source
+Custom Source
+Scribe Source
+
+Channels
+Memory Channel
+JDBC Channel
+Kafka Channel
+File Channel
+Spillable Memory Channel
+Pseudo Transaction Channel
+
+
+Sinks
+HDFS Sink
+Hive Sink
+Logger Sink
+Avro Sink
+Thrift Sink
+IRC Sink
+File Roll Sink
+Null Sink
+HBaseSink
+AsyncHBaseSink
+MorphlineSolrSink
+ElasticSearchSink
+Kite Dataset Sink
+Kafka Sink
+
+Describing the Source
+Each source will have a separate list of properties. The property named “type” is common to every source, and it is used to specify the type of the source we are using.
+
+Along with the property “type”, it is needed to provide the values of all the required properties of a particular source to configure it, as shown below.
+
+agent_name.sources. source_name.type = value 
+agent_name.sources. source_name.property2 = value 
+agent_name.sources. source_name.property3 = value 
+For example, if we consider the twitter source, following are the properties to which we must provide values to configure it.
+
+TwitterAgent.sources.Twitter.type = Twitter (type name) 
+TwitterAgent.sources.Twitter.consumerKey =  
+TwitterAgent.sources.Twitter.consumerSecret = 
+TwitterAgent.sources.Twitter.accessToken =   
+TwitterAgent.sources.Twitter.accessTokenSecret = 
+Describing the Sink
+Just like the source, each sink will have a separate list of properties. The property named “type” is common to every sink, and it is used to specify the type of the sink we are using. Along with the property “type”, it is needed to provide values to all the required properties of a particular sink to configure it, as shown below.
+
+agent_name.sinks. sink_name.type = value 
+agent_name.sinks. sink_name.property2 = value 
+agent_name.sinks. sink_name.property3 = value
+For example, if we consider HDFS sink, following are the properties to which we must provide values to configure it.
+
+TwitterAgent.sinks.HDFS.type = hdfs (type name)  
+TwitterAgent.sinks.HDFS.hdfs.path = HDFS directory’s Path to store the data
+Describing the Channel
+Flume provides various channels to transfer data between sources and sinks. Therefore, along with the sources and the channels, it is needed to describe the channel used in the agent.
+
+To describe each channel, you need to set the required properties, as shown below.
+
+agent_name.channels.channel_name.type = value 
+agent_name.channels.channel_name. property2 = value 
+agent_name.channels.channel_name. property3 = value 
+For example, if we consider memory channel, following are the properties to which we must provide values to configure it.
+
+TwitterAgent.channels.MemChannel.type = memory (type name)
+Binding the Source and the Sink to the Channel
+Since the channels connect the sources and sinks, it is required to bind both of them to the channel, as shown below.
+
+agent_name.sources.source_name.channels = channel_name 
+agent_name.sinks.sink_name.channels = channel_name 
+The following example shows how to bind the sources and the sinks to a channel. Here, we consider twitter source, memory channel, and HDFS sink.
+
+TwitterAgent.sources.Twitter.channels = MemChannel
+TwitterAgent.sinks.HDFS.channels = MemChannel 
+Starting a Flume Agent
+After configuration, we have to start the Flume agent. It is done as follows -
+
+$ bin/flume-ng agent --conf ./conf/ -f conf/twitter.conf 
+Dflume.root.logger=DEBUG,console -n TwitterAgent 
+where -
+
+agent - Command to start the Flume agent
+
+--conf ,-c<conf> - Use configuration file in the conf directory
+
+-f<file> - Specifies a config file path, if missing
+
+--name, -n <name> - Name of the twitter agent
+
+-D property =value - Sets a Java system property value.
+
+Example – Configuration File
+Given below is an example of the configuration file. Copy this content and save as twitter.conf in the conf folder of Flume.
+
+# Naming the components on the current agent. 
+TwitterAgent.sources = Twitter 
+TwitterAgent.channels = MemChannel 
+TwitterAgent.sinks = HDFS
+  
+# Describing/Configuring the source 
+TwitterAgent.sources.Twitter.type = org.apache.flume.source.twitter.TwitterSource
+TwitterAgent.sources.Twitter.consumerKey = Your OAuth consumer key
+TwitterAgent.sources.Twitter.consumerSecret = Your OAuth consumer secret 
+TwitterAgent.sources.Twitter.accessToken = Your OAuth consumer key access token 
+TwitterAgent.sources.Twitter.accessTokenSecret = Your OAuth consumer key access token secret 
+TwitterAgent.sources.Twitter.keywords = tutorials point,java, bigdata, mapreduce, mahout, hbase, nosql
+  
+# Describing/Configuring the sink 
+
+TwitterAgent.sinks.HDFS.type = hdfs 
+TwitterAgent.sinks.HDFS.hdfs.path = hdfs://localhost:9000/user/Hadoop/twitter_data/
+TwitterAgent.sinks.HDFS.hdfs.fileType = DataStream 
+TwitterAgent.sinks.HDFS.hdfs.writeFormat = Text 
+TwitterAgent.sinks.HDFS.hdfs.batchSize = 1000
+TwitterAgent.sinks.HDFS.hdfs.rollSize = 0 
+TwitterAgent.sinks.HDFS.hdfs.rollCount = 10000 
+ 
+# Describing/Configuring the channel TwitterAgent.channels.MemChannel.type = memory 
+TwitterAgent.channels.MemChannel.capacity = 10000 
+TwitterAgent.channels.MemChannel.transactionCapacity = 100
+  
+# Binding the source and sink to the channel 
+TwitterAgent.sources.Twitter.channels = MemChannel
+TwitterAgent.sinks.HDFS.channel = MemChannel 
+Execution
+Browse through the Flume home directory and execute the application as shown below.
+
+$ cd $FLUME_HOME 
+$ bin/flume-ng agent --conf ./conf/ -f conf/twitter.conf 
+Dflume.root.logger=DEBUG,console -n TwitterAgent
+If everything goes fine, the streaming of tweets into HDFS will start. Given below is the snapshot of the command prompt window while fetching tweets.
+
+

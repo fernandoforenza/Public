@@ -1,0 +1,154 @@
+truck_events=LOAD '/home/fernando/driver_data/truck_event_text_partition.csv' USING PigStorage(',');
+DESCRIBE truck_events;
+
+
+truck_events = LOAD '/home/fernando/driver_data/truck_event_text_partition.csv' USING PigStorage(',')
+AS (driverId:int, truckId:int, eventTime:chararray,
+eventType:chararray, longitude:double, latitude:double,
+eventKey:chararray, correlationId:long, driverName:chararray,
+routeId:long,routeName:chararray,eventDate:chararray);
+DESCRIBE truck_events;
+truck_events_subset = LIMIT truck_events 100;
+DESCRIBE truck_events_subset;
+DUMP truck_events_subset;
+
+
+#selecionando apenas algumas colunas
+truck_events = LOAD '/home/fernando/driver_data/truck_event_text_partition.csv' USING PigStorage(',')
+AS (driverId:int, truckId:int, eventTime:chararray,
+eventType:chararray, longitude:double, latitude:double,
+eventKey:chararray, correlationId:long, driverName:chararray,
+routeId:long,routeName:chararray,eventDate:chararray);
+truck_events_subset = LIMIT  truck_events 100;
+specific_columns = FOREACH truck_events_subset GENERATE driverId, eventTime, eventType;
+DESCRIBE specific_columns;
+
+STORE specific_columns INTO 'output/specific_columns' USING PigStorage(',');
+
+
+#join entre duas tabelas
+truck_events = LOAD '/home/fernando/driver_data/truck_event_text_partition.csv' USING PigStorage(',')
+AS (driverId:int, truckId:int, eventTime:chararray,
+eventType:chararray, longitude:double, latitude:double,
+eventKey:chararray, correlationId:long, driverName:chararray,
+routeId:long,routeName:chararray,eventDate:chararray);
+drivers =  LOAD '/home/fernando/driver_data/drivers.csv' USING PigStorage(',')
+AS (driverId:int, name:chararray, ssn:chararray,
+location:chararray, certified:chararray, wage_plan:chararray);
+join_data = JOIN  truck_events BY (driverId), drivers BY (driverId);
+DESCRIBE join_data;
+
+
+#ordenando dados
+drivers =  LOAD '/home/fernando/driver_data/drivers.csv' USING PigStorage(',')
+AS (driverId:int, name:chararray, ssn:chararray,
+location:chararray, certified:chararray, wage_plan:chararray);
+ordered_data = ORDER drivers BY name asc;
+DUMP ordered_data;
+
+#agrupando 
+truck_events = LOAD '/home/fernando/driver_data/truck_event_text_partition.csv' USING PigStorage(',')
+AS (driverId:int, truckId:int, eventTime:chararray,
+eventType:chararray, longitude:double, latitude:double,
+eventKey:chararray, correlationId:long, driverName:chararray,
+routeId:long,routeName:chararray,eventDate:chararray);
+filtered_events = FILTER truck_events BY NOT (eventType MATCHES 'Normal');
+grouped_events = GROUP filtered_events BY driverId;
+DESCRIBE grouped_events;
+DUMP grouped_events;
+
+
+CusId TypeId
+100,100
+101,100
+102,100
+103,103
+104,103
+
+CusId,Sex
+100,M
+101,M
+102,F
+103,M
+104,M
+
+#join tabelas 
+A = LOAD '/home/fernando/driver_data/type.txt' USING PigStorage(',') AS (CusId:chararray, TypeId:chararray);
+B = LOAD '/home/fernando/driver_data/gender.txt' USING PigStorage(',') AS (CusId:chararray, Sex:chararray);
+B = LOAD 'gender.txt' USING PigStorage(',') AS (CusId:chararray, Sex:chararray);
+C = JOIN A BY CusId, B BY CusId;
+D = FOREACH C GENERATE A::CusId AS CusId, A::TypeId AS TypeId, B::Sex AS  Sex;
+E = GROUP D BY (TypeId);
+F = FOREACH E {X = D.Sex; Y = DISTINCT X; GENERATE D,COUNT(Y) AS numSex;};
+G = FOREACH F GENERATE FLATTEN(D), numSex;
+H = FILTER G BY numSex > 1;
+I = FOREACH H GENERATE CusId, TypeId, Sex;
+DUMP I
+
+(102,100,F)
+(101,100,M)
+(100,100,M)
+
+
+#validacao tamanho da string
+employee.txt
+
+1,John,2007-01-24,250
+2,Ram,2007-05-27,220  
+3,Jack,2007-05-06,170  
+3,Jack,2007-04-06,100  
+4,Jill,2007-04-06,220  
+5,Zara,2007-06-06,300  
+5,Zara,2007-02-06,350 
+
+employee_data = LOAD '/home/fernando/driver_data/employee.txt' USING PigStorage(',')
+as (id:int, name:chararray, workdate:chararray, daily_typing_pages:int);
+size = FOREACH employee_data GENERATE SIZE(name);
+Dump size;
+   
+Wordcount (pig script):
+
+a = load '/user/matteo/book.txt';
+b = foreach a {
+        line = LOWER(REPLACE((chararray)$0, '[!?\\.»«:;,\']', ' '));
+    generate flatten(TOKENIZE(line)) as word;
+}
+c = group b by word;
+d = foreach c generate group, COUNT(b) as cnt;
+d_ordered = ORDER d BY cnt DESC;
+store d_ordered into '/user/matteo/book-wordcount';
+
+
+#passando uma função UDF
+
+REGISTER 'files.py' using jython as myfuncs
+
+A = LOAD '/etl/incoming/test.txt' USING PigStorage(',') AS (name:chararray, age:int, gpa:float);
+
+B = FOREACH A {
+    GENERATE
+    myfuncs.checkFormat(TOTUPLE(*)) as fields;
+}
+
+DUMP B;
+
+
+X = FOREACH A GENERATE f2, (
+  CASE f2 % 2
+    WHEN 0 THEN 'even'
+    WHEN 1 THEN 'odd'
+  END
+);
+DUMP X;
+(1,odd)
+(3,odd)
+(6,even)
+
+separando grupos entre nulos e não nulos;
+A = LOAD ‘data’ AS (a0: int, a1: int, a2: int);
+SPLIT A INTO bad IF a2 IS NULL, good IF a2 IS NOT NULL;
+
+
+
+
+

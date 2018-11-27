@@ -1,0 +1,9 @@
+hadoop jar /usr/iop/4.2.0.0/hadoop-mapreduce/hadoop-streaming.jar \ 
+     -D mapred.reduce.tasks=0 \ 
+     -mapper /bin/zcat \ 
+     -input  /apps/hive/warehouse/grc/recepcao/20180322.zip \ 
+     -output /apps/hive/warehouse/grc/recepcao/descompactado5/ 
+
+     
+hadoop jar /usr/iop/4.2.0.0/hadoop-mapreduce/hadoop-streaming.jar -D mapred.reduce.tasks=0 -mapper /bin/zcat -input /apps/hive/warehouse/grc/recepcao/20180322.zip -output /apps/hive/warehouse/grc/recepcao/descompactado6/ 
+

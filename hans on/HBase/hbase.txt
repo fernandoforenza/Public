@@ -1,0 +1,168 @@
+#chamada do console
+hbase shell
+
+
+#Versão do Hbase
+version 
+
+#Status do Hbase
+status
+
+#Lista todos os comandos 
+help 
+
+#Help
+table_help 
+
+#Usuário logado
+whoami 
+
+#Status simples
+status 'simple'
+
+# Status sumarizado
+status 'summary' 
+
+#Status detalhado
+status 'detailed'
+
+CRUD operations:
+• Put
+• Get
+• Delete
+• Scan
+• Increment
+
+#name space
+create_namespace 'ns1'
+Drop_namespace  'ns1'
+List_namespace  'ns1'
+List_namespace_tables 'ns1'
+
+2257752287820180613
+zz57752287820180613
+
+scan 2018061300000000000 até 2018061399999999999
+
+#Criar tabela:
+sintaxe create '<nome_da_tabela>','<familia_de_colunas>'
+
+create 'table1', {NAME=>'ALUNO'}, {NAME=>'INSTRUTOR'}
+
+#Visualizar a estrutura da tabela
+describe 'table1'
+
+#Listando as tabelas:
+list
+
+#Verificando se a tabela existe:
+exists 'table1'
+
+
+$Deletando uma tabela:
+disable 'table1'
+drop 'table1'
+
+
+#adicionar uma família de coluna a tabela:
+alter 'table1', {NAME=>'cursos'}
+
+#Deletar uma família de coluna da tabela:
+alter 'table1', {'delete'=>'cursos' }
+
+#Gravar dados em uma tabela
+Formato: put 'nome_tabela', 'column_family_name:column_name', 'valor'
+put 'table1', 'aluno-101', 'ALUNO:nome', 'Barack'
+put 'table1', 'aluno-101', 'ALUNO:sobrenomenome', 'Obama'
+put 'table1', 'aluno-101', 'ALUNO:idade', '60'
+put 'table1', 'instru-20', 'INSTRUTOR:disciplina', 'Big Data'
+put 'table1', 'instru-20', 'INSTRUTOR:Turno', 'Noite'
+put 'table1', 'instru-21', 'INSTRUTOR:disciplina', 'Bancos NoSQL'
+put 'table1', 'instru-21', 'INSTRUTOR:Turno', 'Noite'
+
+#Retornar dados:
+scan 'table1'
+
+
+Para recuperar dados do Hbase:
+get 'table1', 'aluno-101'
+get 'table1', 'instru-21'
+
+hbase> get 'ns1:t1', 'r1'
+hbase> get 't1', 'r1'
+hbase> get 't1', 'r1', {TIMERANGE => [ts1, ts2]}
+hbase> get 't1', 'r1', {COLUMN => 'c1'}
+hbase> get 't1', 'r1', {COLUMN => ['c1', 'c2', 'c3']}
+hbase> get 't1', 'r1', {COLUMN => 'c1', TIMESTAMP => ts1}
+hbase> get 't1', 'r1', {COLUMN => 'c1', TIMERANGE => [ts1, ts2], VERSIONS => 4}
+hbase> get 't1', 'r1', {COLUMN => 'c1', TIMESTAMP => ts1, VERSIONS => 4}
+hbase> get 't1', 'r1', {FILTER => "ValueFilter(=, 'binary:abc')"}
+hbase> get 't1', 'r1', 'c1'
+hbase> get 't1', 'r1', 'c1', 'c2'
+hbase> get 't1', 'r1', ['c1', 'c2']
+hbsase> get 't1','r1', {COLUMN => 'c1', ATTRIBUTES => {'mykey'=>'myvalue'}}
+hbsase> get 't1','r1', {COLUMN => 'c1', AUTHORIZATIONS => ['PRIVATE','SECRET']}
+
+table1.scan
+base> scan 'hbase:meta'
+hbase> scan 'hbase:meta', {COLUMNS => 'info:regioninfo'}
+hbase> scan 'ns1:t1', {COLUMNS => ['c1', 'c2'], LIMIT => 10, STARTROW => 'xyz'}
+hbase> scan 't1', {COLUMNS => ['c1', 'c2'], LIMIT => 10, STARTROW => 'xyz'}
+hbase> scan 't1', {COLUMNS => 'c1', TIMERANGE => [1303668804, 1303668904]}
+hbase> scan 't1', {REVERSED => true}
+hbase> scan 't1', {FILTER => "(PrefixFilter ('row2') AND
+(QualifierFilter (>=, 'binary:xyz'))) AND (TimestampsFilter ( 123, 456))"}
+hbase> scan 't1', {FILTER => org.apache.hadoop.hbase.filter.ColumnPaginationFilter.new(1, 0)}
+
+
+Deletar todas as células em uma linha:
+deleteall 'table1', 'instru-21'
+
+
+#Para deletar dados em uma célula
+delete 'nome_tabela', 'column_family_name:column_name', '<timestamp>'
+delete 'table1', 'aluno-101', 'ALUNO:nome', 1425667662
+delete 'mastercard:mastercard','200001050000193',
+ 
+count 'table1'
+
+#Remover todos os registros de uma tabela (disable, drop, create):
+truncate 'table1'
+
+#copiando uma tabela
+snapshot 'tableName', 'tableSnapshot'
+clone_snapshot 'tableSnapshot', 'newTableName'
+delete_snapshot 'tableSnapshot'
+
+
+#incrementando tabelas
+append 't1', 'r1', 'c1', 'value', ATTRIBUTES=>{'mykey'=>'myvalue'}
+append 't1', 'r1', 'c1', 'value', {VISIBILITY=>'PRIVATE|SECRET'}
+
+hbase> incr 'ns1:t1', 'r1', 'c1'
+hbase> incr 't1', 'r1', 'c1'
+hbase> incr 't1', 'r1', 'c1', 1
+hbase> incr 't1', 'r1', 'c1', 10
+
+hbase> incr 't1', 'r1', 'c1', 10, {ATTRIBUTES=>{'mykey'=>'myvalue'}}
+hbase> incr 't1', 'r1', 'c1', {ATTRIBUTES=>{'mykey'=>'myvalue'}}
+hbase> incr 't1', 'r1', 'c1', 10, {VISIBILITY=>'PRIVATE|SECRET'}
+
+#procurando por chave binaria
+hbase> get 't1', "key\x03\x3f\xcd"
+hbase> get 't1', "key\003\023\011"
+hbase> put 't1', "test\xef\xff", 'f1:', "\x01\x33\x40"
+
+#permissionando usuários
+hbase> grant 'bobsmith', 'RWXCA'
+hbase> grant 'bobsmith', 'RWXCA', '@ns1'
+hbase> grant 'bobsmith', 'RW', 't1', 'f1', 'col1'
+hbase> grant 'bobsmith', 'RW', 'ns1:t1', 'f1', 'col1'
+
+
+http://hadooptutorial.info/hbase-shell-commands-in-practice/
+
+
+
+
+ 
